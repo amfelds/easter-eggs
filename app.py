@@ -61,29 +61,12 @@ def oauth_callback():
     return redirect(url_for('done'))
 
 def process_user(uid):
-    '''Call /delta for the given user ID and process any changes.'''
+    '''Create folder tree, put random easter eggs in it.'''
 
     # OAuth token for the user
     token = redis_client.hget('tokens', uid)
 
-    # /delta cursor for the user (None the first time)
-    cursor = redis_client.hget('cursors', uid)
-
     client = DropboxClient(token)
-    has_more = True
-
-    while has_more:
-        result = client.delta(cursor)
-
-        for path, metadata in result['entries']:
-            pass
-
-        # Update cursor
-        cursor = result['cursor']
-        redis_client.hset('cursors', uid, cursor)
-
-        # Repeat only if there's more to do
-        has_more = result['has_more']
 
 @app.route('/')
 def index():
