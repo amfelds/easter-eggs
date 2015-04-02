@@ -69,8 +69,8 @@ def process_user(uid):
     client = DropboxClient(token)
 
     # Set up the Easter hunt area!
+    client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
     client.file_create_folder('Easter basket')
-    client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/')
 
 @app.route('/')
 def index():

@@ -36,3 +36,4 @@ $ git push heroku master
 
 
 Yard copy ref: 'M7Zx2DJjNXYxbjJsN3p6YQ'
+client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
