@@ -5,6 +5,7 @@ import os
 import os.path
 import threading
 import urlparse
+import random
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
@@ -69,8 +70,21 @@ def process_user(uid):
     client = DropboxClient(token)
 
     # Set up the Easter hunt area!
-    client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
+    yard = client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
     client.file_create_folder('Easter basket')
+
+def hide_eggs(client):
+    # Get flat list of paths to directories from '/Yard' TODO
+    flat_list = {'/Yard','/Yard/back porch','/Yard/flower bed','/Yard/grass','/Yard/kentucky blue grass','/Yard/lawn','/Yard/more grass','/Yard/patio'}
+
+    # Choose 5 random places to hide eggs
+    hiding_places = random.sample(set(flat_list), 5)
+    print hiding_places
+
+    # copy egg images into those hiding places
+    egg_ref = 'M7Zx2HpjY285MDRrbXlrdg'
+    for path in hiding_places:
+        client.add_copy_ref(egg_ref, path+'/egg.jpg')
 
 @app.route('/')
 def index():
@@ -78,6 +92,7 @@ def index():
 
 @app.route('/login')
 def login():
+    print "login called"
     return redirect(get_flow().start())
 
 @app.route('/done')
