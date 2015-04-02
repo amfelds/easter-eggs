@@ -3,15 +3,12 @@ import hmac
 import json
 import os
 import os.path
-import shutil
-import tempfile
 import threading
 import urlparse
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
 import redis
-from whelk import shell
  
 redis_url = os.environ['REDISTOGO_URL']
 redis_client = redis.from_url(redis_url)
@@ -79,26 +76,7 @@ def process_user(uid):
         result = client.delta(cursor)
 
         for path, metadata in result['entries']:
-
-            # Ignore deleted files, folders, non-jpegs, and our output
-            if (metadata is None or
-                    metadata['is_dir'] or
-                    not metadata.get('thumb_exists') or
-                    path.endswith('-corrected.jpg')):
-                continue
-
-            temp_path = tempfile.mkdtemp()
-
-            with open(temp_path + '/input.jpg', 'wb') as fout:
-                with client.thumbnail(path, size='l', format='JPEG') as fin:
-                    fout.write(fin.read())
-
-            shell.convert(temp_path + '/input.jpg', '-modulate', 250, '-fill', 'gold', '-tint', 100, temp_path + '/corrected.jpg')
-
-            with open(temp_path + '/corrected.jpg', 'rb') as f:
-                client.put_file(os.path.splitext(path)[0]+'-corrected.jpg', f, overwrite=True)
-
-            shutil.rmtree(temp_path)
+            pass
 
         # Update cursor
         cursor = result['cursor']
