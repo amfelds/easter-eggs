@@ -97,12 +97,17 @@ def hide_eggs(uid):
     print hiding_places
 
     # copy egg images into those hiding places
-    egg_refs = ['M7Zx2HpjY285MDRrbXlrdg','M7Zx2DN5Nm05M3Zqbmh3bA','M7Zx2Ho4d2w1d3B6czRubQ','M7Zx2DQ0YnFmMGwxcWZ0aA','M7Zx2HByb25hbmhvcXh0dA']
-    client.add_copy_ref(egg_refs[0], hiding_places[0]+'/egg.jpg')
-    client.add_copy_ref(egg_refs[1], hiding_places[1]+'/blue_egg.jpg')
-    client.add_copy_ref(egg_refs[2], hiding_places[2]+'/pastel_egg.jpg')
-    client.add_copy_ref(egg_refs[3], hiding_places[3]+'/polka_dot_egg.jpg')
-    client.add_copy_ref(egg_refs[4], hiding_places[4]+'/nest_eggs.jpg')
+    egg_refs = {
+        'egg.jpg': 'M7Zx2HpjY285MDRrbXlrdg',
+        'blue_egg.jpg': 'M7Zx2DN5Nm05M3Zqbmh3bA',
+        'pastel_egg.jpg': 'M7Zx2Ho4d2w1d3B6czRubQ',
+        'polka_dot_egg.jpg': 'M7Zx2DQ0YnFmMGwxcWZ0aA',
+        'nest_eggs.jpg': 'M7Zx2HByb25hbmhvcXh0dA',
+    }
+    keys = egg_refs.keys()
+
+    for i in range(5):
+        client.add_copy_ref(egg_refs[keys[i]], hiding_places[i] + '/' + keys[i])
 
     # TODO set start time
 
