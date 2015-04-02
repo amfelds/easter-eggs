@@ -112,8 +112,8 @@ def recurse_yard(path, list, client):
         for item in contents:
             if item['is_dir']:
                 path = item['path']
-                yard_paths[path] = path
-                recurse_yard(path, yard_paths, client)
+                list[path] = path
+                recurse_yard(path, list, client)
 
 @app.route('/')
 def index():
