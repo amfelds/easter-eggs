@@ -76,9 +76,19 @@ def process_user(uid):
     client = DropboxClient(token)
 
     # Set up the Easter hunt area!
-    # TODO delete 
-    yard = client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
-    client.file_create_folder('Easter basket')
+    try:
+        client.file_delete('/Yard')
+    except Exception, e:
+        pass
+
+    client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
+        
+    try:
+        client.file_delete('/Easter basket')
+    except Exception, e:
+        pass
+
+    client.file_create_folder('/Easter basket')
 
     hide_eggs(uid)
     redis_client.hset('start_times',uid, time.time())
@@ -149,9 +159,9 @@ def check_basket():
 
     if found_eggs_counter == 5:
         elapsed = time.time() - float(redis_client.hget('start_times', uid))
-        return render_template( 'found_eggs.html', seconds = elapsed)
+        return render_template( 'found_eggs.html', seconds = '%.2f' % elapsed)
     else:
-        return render_template('done.html')
+        return render_template('done.html', notyet = True)
 
 def validate_request():
     '''Validate that the request is properly signed by Dropbox.
