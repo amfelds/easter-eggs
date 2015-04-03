@@ -1,12 +1,9 @@
-from hashlib import sha256
-import hmac
 import json
 import os
 import os.path
-import threading
-import urlparse
 import random
 import time
+import urlparse
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
@@ -25,9 +22,14 @@ app.debug = True
 # A random secret used by Flask to encrypt session data cookies
 app.secret_key = os.environ['FLASK_SECRET_KEY']
 
-# Easter variables
-# TODO copy ref paths
-# TODO start time
+# Egg file copy_refs and names
+egg_refs = {
+    'egg.jpg': 'M7Zx2Dg4NHNvZXdtcnM5Mw',
+    'blue_egg.jpg': 'M7Zx2HJtMm56b3Fpdmcxeg',
+    'pastel_egg.jpg': 'M7Zx2DVxM3llcjF1cGhxcw',
+    'nest_eggs.jpg': 'M7Zx2GV1aTNudXF5MzA0eg',
+    'polka_dot_egg.jpg': 'M7Zx2G5pMnhrMGZ2dDAzYQ',
+}
 
 def get_url(route):
     '''Generate a proper URL, forcing HTTPS if not running locally'''
@@ -47,11 +49,6 @@ def get_flow():
         get_url('oauth_callback'),
         session,
         'dropbox-csrf-token')
-
-@app.route('/welcome')
-def welcome():
-    return render_template('welcome.html', redirect_url=get_url('oauth_callback'),
-        webhook_url=get_url('webhook'), home_url=get_url('index'), app_key=APP_KEY)
 
 @app.route('/oauth_callback')
 def oauth_callback():
@@ -99,34 +96,30 @@ def hide_eggs(uid):
     client = DropboxClient(token)
 
     # Get flat list of paths to directories from '/Yard'
-    flat_list = {}
-    recurse_yard('/Yard',flat_list,client)
+    flat_list = enumerate_yard('/Yard', client)
 
     # Choose 5 random places to hide eggs
-    hiding_places = random.sample(set(flat_list), 5)
-    print hiding_places
+    hiding_places = random.sample(flat_list, 5)
 
     # copy egg images into those hiding places
-    egg_refs = {
-        'egg.jpg': 'M7Zx2Dg4NHNvZXdtcnM5Mw',
-        'blue_egg.jpg': 'M7Zx2HJtMm56b3Fpdmcxeg',
-        'pastel_egg.jpg': 'M7Zx2DVxM3llcjF1cGhxcw',
-        'nest_eggs.jpg': 'M7Zx2GV1aTNudXF5MzA0eg',
-        'polka_dot_egg.jpg': 'M7Zx2G5pMnhrMGZ2dDAzYQ',
-    }
     keys = egg_refs.keys()
 
     for i in range(5):
         client.add_copy_ref(egg_refs[keys[i]], hiding_places[i] + '/' + keys[i])
 
-def recurse_yard(path, list, client):
-    contents = client.metadata(path)['contents']
-    if (len(contents) > 0):
-        for item in contents:
-            if item['is_dir']:
-                path = item['path']
-                list[path] = path
-                recurse_yard(path, list, client)
+def enumerate_yard(path, client):
+    cursor = None
+    has_more = True
+
+    paths = set()
+
+    while has_more:
+        response = client.delta(path_prefix=path, cursor=cursor)
+        for path, metadata in response['entries']:
+            paths.add(path)
+        has_more = response['has_more']
+
+    return paths
 
 @app.route('/')
 def index():
@@ -148,7 +141,7 @@ def check_basket():
 
     client = DropboxClient(token)
 
-    file_names = {'egg.jpg','blue_egg.jpg','pastel_egg.jpg','polka_dot_egg.jpg','nest_eggs.jpg'}
+    file_names = egg_refs.keys()
 
     # # check if /Easter basket has all five eggs
     basket_contents = client.metadata('/Easter basket').get('contents')
