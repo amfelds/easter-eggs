@@ -15,10 +15,7 @@ You need your own copy_refs to match with your Dropbox API app key (see https://
 2. Once you have a client object, use it to call create_copy_ref() (see: https://www.dropbox.com/developers/core/docs/python) from the directory where your own easter egg images and Yard folder are located.
 
 >>> egg_ref_1 = client.create_copy_ref('<path to egg file 1>')['copy_ref']
->>> egg_ref_2 = client.create_copy_ref('<path to egg file 2>')['copy_ref']
->>> egg_ref_3 = client.create_copy_ref('<path to egg file 3>')['copy_ref']
->>> egg_ref_4 = client.create_copy_ref('<path to egg file 4>')['copy_ref']
->>> egg_ref_5 = client.create_copy_ref('<path to egg file 5>')['copy_ref']
+etc.
 >>> yard_ref = client.create_copy_ref('<path to /Yard root>')['copy_ref']
 
 3. Add the egg egg_ref_<#> strings to the egg_refs object in app.py (line 26)
