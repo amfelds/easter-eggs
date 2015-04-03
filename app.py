@@ -6,6 +6,7 @@ import os.path
 import threading
 import urlparse
 import random
+import time
 
 from dropbox.client import DropboxClient, DropboxOAuth2Flow
 from flask import abort, Flask, redirect, render_template, request, session, url_for
@@ -75,20 +76,19 @@ def process_user(uid):
     client = DropboxClient(token)
 
     # Set up the Easter hunt area!
+    # TODO delete 
     yard = client.add_copy_ref('M7Zx2DJjNXYxbjJsN3p6YQ','/Yard')
     client.file_create_folder('Easter basket')
 
     hide_eggs(uid)
-    # start the timer
+    redis_client.hset('start_times',uid, time.time())
 
 def hide_eggs(uid):
     token = redis_client.hget('tokens', uid)
 
     client = DropboxClient(token)
 
-    # TODO for the play again scenario, should I delete any pre-existing egg files first? or re-create the whole yard?
-
-    # Get flat list of paths to directories from '/Yard' TODO
+    # Get flat list of paths to directories from '/Yard'
     flat_list = {}
     recurse_yard('/Yard',flat_list,client)
 
@@ -108,8 +108,6 @@ def hide_eggs(uid):
 
     for i in range(5):
         client.add_copy_ref(egg_refs[keys[i]], hiding_places[i] + '/' + keys[i])
-
-    # TODO set start time
 
 def recurse_yard(path, list, client):
     contents = client.metadata(path)['contents']
@@ -140,14 +138,19 @@ def check_basket():
 
     client = DropboxClient(token)
 
+    file_names = {'egg.jpg','blue_egg.jpg','pastel_egg.jpg','polka_dot_egg.jpg','nest_eggs.jpg'}
+
     # # check if /Easter basket has all five eggs
-    # # if not, say "You haven't found all the eggs yet! Keep looking."
     basket_contents = client.metadata('/Easter basket').get('contents')
-    if len(basket_contents) == 5:
-       # if so, stop the timer and say congrats (with play again option)     
-       return render_template('found_eggs.html')
+    found_eggs_counter = 0
+    for item in basket_contents:
+        if os.path.split(item['path'])[1] in file_names:
+            found_eggs_counter += 1
+
+    if found_eggs_counter == 5:
+        elapsed = time.time() - float(redis_client.hget('start_times', uid))
+        return render_template( 'found_eggs.html', seconds = elapsed)
     else:
-        # TODO alert that you're not done
         return render_template('done.html')
 
 def validate_request():
@@ -156,27 +159,6 @@ def validate_request():
 
     signature = request.headers.get('X-Dropbox-Signature')
     return signature == hmac.new(APP_SECRET, request.data, sha256).hexdigest()
-
-@app.route('/webhook', methods=['GET'])
-def challenge():
-    '''Respond to the webhook challenge (GET request) by echoing back the challenge parameter.'''
-
-    return request.args.get('challenge')
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    '''Receive a list of changed user IDs from Dropbox and process each.'''
-
-    # Make sure this is a valid request from Dropbox
-    if not validate_request(): abort(403)
-
-    for uid in json.loads(request.data)['delta']['users']:
-        # We need to respond quickly to the webhook request, so we do the
-        # actual work in a separate thread. For more robustness, it's a
-        # good idea to add the work to a reliable queue and process the queue
-        # in a worker process.
-        threading.Thread(target=process_user, args=(uid,)).start()
-    return ''
 
 if __name__=='__main__':
     app.run(debug=True)
