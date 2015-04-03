@@ -2,6 +2,7 @@ body { font-family: Georgia, serif, 'Helvetica Neue', 'Segoe UI', Arial; font-si
 #container { max-width: 600px; margin: 0 auto; }
 #footer { text-align: center; font-size: small; vertical-align: bottom; }
 ol li { margin-bottom: 18px; text-decoration: none; }
+p {background-color: rgba(255,255,255,0.4); padding: 1em; }
 h1 { text-align: center; margin: 50px; padding-top: 0; font-weight: normal; }
 code {
     border-radius: 5px;
