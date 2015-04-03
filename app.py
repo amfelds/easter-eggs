@@ -108,11 +108,11 @@ def hide_eggs(uid):
 
     # copy egg images into those hiding places
     egg_refs = {
-        'egg.jpg': 'M7Zx2HpjY285MDRrbXlrdg',
-        'blue_egg.jpg': 'M7Zx2DN5Nm05M3Zqbmh3bA',
-        'pastel_egg.jpg': 'M7Zx2Ho4d2w1d3B6czRubQ',
-        'polka_dot_egg.jpg': 'M7Zx2DQ0YnFmMGwxcWZ0aA',
-        'nest_eggs.jpg': 'M7Zx2HByb25hbmhvcXh0dA',
+        'egg.jpg': 'M7Zx2Dg4NHNvZXdtcnM5Mw',
+        'blue_egg.jpg': 'M7Zx2HJtMm56b3Fpdmcxeg',
+        'pastel_egg.jpg': 'M7Zx2DVxM3llcjF1cGhxcw',
+        'nest_eggs.jpg': 'M7Zx2GV1aTNudXF5MzA0eg',
+        'polka_dot_egg.jpg': 'M7Zx2G5pMnhrMGZ2dDAzYQ',
     }
     keys = egg_refs.keys()
 
@@ -162,6 +162,10 @@ def check_basket():
         return render_template( 'found_eggs.html', seconds = '%.2f' % elapsed)
     else:
         return render_template('done.html', notyet = True)
+
+@app.route('/credits')
+def credits():
+    return render_template('credits.html')
 
 def validate_request():
     '''Validate that the request is properly signed by Dropbox.
